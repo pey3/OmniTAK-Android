@@ -116,7 +116,7 @@ The RTMP and SRT extensions were left out on purpose. Media3 RTMP pulls in nativ
 - HLS from OpenTAKServer through the CA pin.
 - Raw H.264 over UDP.
 - A real drone feed into the UAS PiP.
-- Lint was not run.
+- **Lint:** `lintDebug` reports 19 errors, all on lines that predate this branch (MissingPermission, NewApi for `URLEncoder.encode(String, Charset)`, UnsafeOptInUsageError in the ONVIF screen, ProduceStateDoesNotAssignValue). None are in code this PR adds. The warnings were not triaged.
 
 ## Screens
 
