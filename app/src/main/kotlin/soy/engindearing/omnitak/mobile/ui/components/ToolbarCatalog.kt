@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Router
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -82,6 +83,7 @@ object ToolbarCatalog {
         BarItem("settings", "Settings", Icons.Filled.Settings, cSettings, BarKind.Destination("settings")),
         BarItem("uas", "Vehicles", Icons.Filled.FlightTakeoff, cChat, BarKind.Destination("uas")),
         BarItem("onvif", "Camera", Icons.Filled.Videocam, cCamera, BarKind.Destination("onvif")),
+        BarItem("videofeeds", "Video", Icons.Filled.LiveTv, cCamera, BarKind.Destination("videofeeds")),
     )
 
     /** Commands — open the Tools popup, start lasso, or flip 2D/3D. */

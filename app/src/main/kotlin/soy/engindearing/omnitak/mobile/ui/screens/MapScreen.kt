@@ -1181,6 +1181,7 @@ fun MapScreen(onOpenTab: (String) -> Unit = {}) {
             }
         }
 
+
         // -------- In-flight control bar (armed only) — bottom-center --------
         if (droneState.isConnected() && droneState.armed == true) {
             androidx.compose.foundation.layout.Box(
@@ -1713,6 +1714,20 @@ fun MapScreen(onOpenTab: (String) -> Unit = {}) {
             }
         }
 
+        // -------- Video Feeds PiP — any feed, no drone / MAVLink needed --------
+        // Drawn after the map controls so the video is never covered by
+        // them; sheets and menus below still open on top of it.
+        val pipFeedId by app.videoFeeds.pipFeedId.collectAsState()
+        val playingVideo by app.videoFeeds.playing.collectAsState()
+        playingVideo?.takeIf { pipFeedId != null && it.feed.id == pipFeedId }?.let { pipController ->
+            soy.engindearing.omnitak.mobile.ui.video.FloatingVideoPip(
+                controller = pipController,
+                title = pipController.feed.alias,
+                onClose = { app.videoFeeds.closePlayback() },
+                onExpand = { onOpenTab("videoplayer") },
+            )
+        }
+
         // Surface a "Fly UAS here" action in the radial menu only when a
         // drone is actually connected — keeps the menu clean for users
         // who never touch a UAS.
@@ -1953,6 +1968,13 @@ fun MapScreen(onOpenTab: (String) -> Unit = {}) {
                 {
                     app.contactStore.remove(it.uid)
                     toast("Deleted marker “${it.callsign ?: it.uid}”")
+                    markerSheetLatLng = null
+                    editingMarker = null
+                }
+            },
+            onWatchVideo = editingMarker?.let { app.videoFeeds.feedFromContact(it) }?.let { feed ->
+                {
+                    app.videoFeeds.showPip(feed)
                     markerSheetLatLng = null
                     editingMarker = null
                 }

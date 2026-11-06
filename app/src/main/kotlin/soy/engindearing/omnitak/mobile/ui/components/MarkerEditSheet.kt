@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -123,6 +124,9 @@ fun MarkerEditSheet(
      *  supplies this only when (a) the marker is an existing contact
      *  (editing=true), and (b) a UAS is currently connected. */
     onPursueWithUas: (() -> Unit)? = null,
+    /** When non-null, renders a full-width "Watch video" button — Map screen
+     *  supplies this when the contact advertises a feed (`__video`). */
+    onWatchVideo: (() -> Unit)? = null,
     onDismiss: () -> Unit,
 ) {
     if (!visible) return
@@ -192,6 +196,26 @@ fun MarkerEditSheet(
             // value; Source shows how the point arrived (TAK server vs which mesh)
             // for comms debugging. Both only render for an existing contact.
             ContactMetaRows(contact)
+            // First action under the header: a teammate opening a camera
+            // marker wants the video, not the edit form.
+            if (onWatchVideo != null) {
+                Spacer(Modifier.height(12.dp))
+                Button(
+                    onClick = onWatchVideo,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = androidx.compose.ui.graphics.Color(0xFF00E5FF),
+                        contentColor = androidx.compose.ui.graphics.Color(0xFF0A1628),
+                    ),
+                ) {
+                    androidx.compose.material3.Icon(
+                        androidx.compose.material.icons.Icons.Filled.Videocam,
+                        contentDescription = null,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text("Watch video")
+                }
+            }
 
             Spacer(Modifier.height(16.dp))
             OutlinedTextField(

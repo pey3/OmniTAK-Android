@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Terrain
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -57,6 +58,7 @@ fun ToolsLauncherSheet(
     onLasso: () -> Unit,
     onUAS: () -> Unit = {},
     onOnvifCamera: () -> Unit = {},
+    onVideoFeeds: () -> Unit = {},
     onGoToCoordinate: () -> Unit = {},
     onCustomize: () -> Unit = {},
     onMapOverlays: () -> Unit = {},
@@ -121,6 +123,18 @@ fun ToolsLauncherSheet(
                 title = "Vehicle Connect (UAS / UGV)",
                 subtitle = "MAVLink drones, rovers & boats — PX4 / ArduPilot, telemetry to CoT",
                 onClick = onUAS,
+            )
+
+            HorizontalDivider(
+                modifier = Modifier.padding(start = 76.dp),
+                color = Color.White.copy(alpha = 0.08f),
+            )
+
+            ToolsRow(
+                icon = { Icon(Icons.Filled.LiveTv, contentDescription = null, tint = Color(0xFF00E5FF)) },
+                title = "Video Feeds",
+                subtitle = "Watch RTSP / HLS / UDP streams and TAK server feeds — full screen or over the map",
+                onClick = onVideoFeeds,
             )
 
             HorizontalDivider(

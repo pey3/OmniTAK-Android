@@ -94,6 +94,31 @@ class MainActivity : ComponentActivity() {
         (application as? OmniTAKApp)?.refreshConnectionService()
     }
 
+    /**
+     * Leaving the app (Home / app switch) while a video feed is open full
+     * screen shrinks it to a system picture-in-picture window instead of
+     * stopping the video. Only then — the map itself never goes PiP.
+     */
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (!soy.engindearing.omnitak.mobile.ui.video.PlayerWindow.fullscreenActive) return
+        runCatching {
+            enterPictureInPictureMode(
+                android.app.PictureInPictureParams.Builder()
+                    .setAspectRatio(soy.engindearing.omnitak.mobile.ui.video.PlayerWindow.aspect)
+                    .build(),
+            )
+        }.onFailure { Log.w("MainActivity", "PiP refused: ${it.javaClass.simpleName}") }
+    }
+
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: android.content.res.Configuration,
+    ) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        soy.engindearing.omnitak.mobile.ui.video.PlayerWindow.onPictureInPictureChanged(isInPictureInPictureMode)
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleImportIntent(intent)

@@ -768,6 +768,20 @@ class OmniTAKApp : Application() {
         appScope.launch { meshServerRelay.onInbound(event, event.source) }
     }
 
+    /** Video Feeds (GAP-082): manual + TAK-server + marker feeds and the
+     *  shared player behind the full-screen view and the map PiP. */
+    val videoFeeds: soy.engindearing.omnitak.mobile.domain.VideoFeedManager by lazy {
+        soy.engindearing.omnitak.mobile.domain.VideoFeedManager(
+            context = this,
+            scope = appScope,
+            store = soy.engindearing.omnitak.mobile.data.video.VideoFeedStore(this),
+            serverManager = serverManager,
+            contactStore = contactStore,
+            certVault = certVault,
+            selfUid = { cachedPrefs.value.selfUid.ifBlank { null } },
+        )
+    }
+
     /** Multi-server mission / data-package sync over the Marti REST API.
      *  Aggregates across every enabled TLS+cert server (iOS parity). */
     val missionSyncManager: soy.engindearing.omnitak.mobile.domain.MissionSyncManager by lazy {

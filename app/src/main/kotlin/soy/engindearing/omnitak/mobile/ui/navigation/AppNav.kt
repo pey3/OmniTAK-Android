@@ -294,7 +294,8 @@ fun AppNav() {
             // toolbar visibility. Every other route keeps the normal
             // space-reserving bar so the toolbar never overlaps their
             // (non-map, potentially scrollable-to-the-bottom) content.
-            if (currentRoute != "map") {
+            // The full-screen video player owns the whole screen (no bar).
+            if (currentRoute != "map" && currentRoute != "videoplayer") {
                 toolbarContent()
             }
         },
@@ -331,6 +332,19 @@ fun AppNav() {
             }
             composable("onvif") {
                 soy.engindearing.omnitak.mobile.ui.screens.OnvifCameraScreen(onDone = { nav.popBackStack() })
+            }
+            composable("videofeeds") {
+                soy.engindearing.omnitak.mobile.ui.screens.VideoFeedsScreen(
+                    onBack = { nav.popBackStack() },
+                    onWatch = { nav.navigate("videoplayer") { launchSingleTop = true } },
+                    onShowOnMap = { navigateTo("map") },
+                )
+            }
+            composable("videoplayer") {
+                soy.engindearing.omnitak.mobile.ui.video.VideoPlayerScreen(
+                    onBack = { nav.popBackStack() },
+                    onShowOnMap = { navigateTo("map") },
+                )
             }
             composable("chat") { ChatScreen() }
             composable(
@@ -464,6 +478,13 @@ fun AppNav() {
             onOnvifCamera = {
                 showToolsLauncher = false
                 nav.navigate("onvif") {
+                    popUpTo(nav.graph.startDestinationId) { saveState = true }
+                    launchSingleTop = true
+                }
+            },
+            onVideoFeeds = {
+                showToolsLauncher = false
+                nav.navigate("videofeeds") {
                     popUpTo(nav.graph.startDestinationId) { saveState = true }
                     launchSingleTop = true
                 }
