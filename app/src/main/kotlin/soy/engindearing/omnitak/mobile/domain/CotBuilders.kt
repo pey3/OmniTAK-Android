@@ -1,5 +1,6 @@
 package soy.engindearing.omnitak.mobile.domain
 
+import soy.engindearing.omnitak.mobile.data.video.CotVideo
 import soy.engindearing.omnitak.mobile.data.CoTEvent
 import soy.engindearing.omnitak.mobile.data.CotXml
 import java.util.UUID
@@ -79,6 +80,10 @@ object CotBuilders {
             event.courseHeading?.let {
                 append("<track course=\"").append(it).append("\" speed=\"0.0\"/>")
             }
+            // Keep a marker's video feed when it is edited and re-sent.
+            event.videoUrl?.let { url ->
+                append(CotVideo.detailXml(event.uid, event.videoAlias ?: event.callsign ?: event.uid, url))
+            }
             destUids.forEach { append("<dest uid=\"").append(CotXml.escape(it)).append("\"/>") }
             append("</detail>")
         }
@@ -103,7 +108,7 @@ object CotBuilders {
      * shape are emitted as rotary by default since that's what most
      * MAVLink platforms in the field are.
      *
-     * Optional `videoUri` adds the `<video><ConnectionEntry>` detail
+     * Optional `videoUri` adds the `<__video><ConnectionEntry>` detail
      * (RTSP URL) that lets other ATAK / iTAK / OmniTAK clients pick up
      * the drone's FMV stream from the same map marker.
      */
@@ -141,9 +146,9 @@ object CotBuilders {
                 append("\" speed=\"").append(groundSpeedMps ?: 0.0).append("\"/>")
             }
             if (!videoUri.isNullOrBlank()) {
-                append("<video><ConnectionEntry uid=\"").append(CotXml.escape(uid))
-                append("-VID\" protocol=\"rtsp\" address=\"").append(CotXml.escape(videoUri))
-                append("\"/></video>")
+                // ATAK-standard <__video> (the old <video> element was not
+                // read by ATAK/iTAK). Credentials are stripped inside.
+                append(CotVideo.detailXml("$uid-VID", callsign, videoUri))
             }
             if (!operatorUid.isNullOrBlank()) {
                 append("<link uid=\"").append(CotXml.escape(operatorUid))

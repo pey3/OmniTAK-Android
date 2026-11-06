@@ -1,6 +1,8 @@
 package soy.engindearing.omnitak.mobile.data
 
 import org.xmlpull.v1.XmlPullParser
+import soy.engindearing.omnitak.mobile.data.video.CotVideo
+import soy.engindearing.omnitak.mobile.data.video.VideoFeedUrls
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.StringReader
 
@@ -40,6 +42,11 @@ object CoTParser {
         var iconsetPath: String? = null
         var colorArgb: Int? = null
         var courseHeading: Double? = null
+        // Video detail: <__video url=…><ConnectionEntry …/></__video>, or the
+        // pre-fix OmniTAK <video><ConnectionEntry address="rtsp://…"/></video>.
+        var videoAttrs: Map<String, String>? = null
+        var entryAttrs: Map<String, String>? = null
+        var inVideo = false
 
         var ev = parser.eventType
         while (ev != XmlPullParser.END_DOCUMENT) {
@@ -86,7 +93,16 @@ object CoTParser {
                     "track" -> {
                         courseHeading = parser.getAttributeValue(null, "course")?.toDoubleOrNull() ?: courseHeading
                     }
+                    "__video", "video" -> if (videoAttrs == null) {
+                        videoAttrs = parser.attributeMap()
+                        inVideo = true // an empty <__video/> still emits END_TAG
+                    }
+                    "ConnectionEntry" -> if (inVideo && entryAttrs == null) {
+                        entryAttrs = parser.attributeMap()
+                    }
                 }
+            } else if (ev == XmlPullParser.END_TAG && (parser.name == "__video" || parser.name == "video")) {
+                inVideo = false
             }
             ev = parser.next()
         }
@@ -110,6 +126,13 @@ object CoTParser {
             iconsetPath = iconsetPath,
             colorArgb = colorArgb,
             courseHeading = courseHeading,
+            // Credentials / tokens a peer put in the URL are dropped here, so
+            // they are never shown, persisted with the marker or re-sent.
+            videoUrl = CotVideo.resolveUrl(videoAttrs, entryAttrs)?.let(VideoFeedUrls::shareable),
+            videoAlias = CotVideo.resolveAlias(entryAttrs),
         )
     }.getOrNull()
+
+    private fun XmlPullParser.attributeMap(): Map<String, String> =
+        (0 until attributeCount).associate { getAttributeName(it) to getAttributeValue(it) }
 }

@@ -104,6 +104,14 @@ data class CoTEvent(
      * locally-built event before the source is attached).
      */
     val source: CoTSource? = null,
+    /**
+     * Video feed advertised by the marker (`<__video>` / legacy `<video>`
+     * detail), resolved to a playable URL by [soy.engindearing.omnitak.mobile.data.video.CotVideo].
+     * Null when the event carries none.
+     */
+    val videoUrl: String? = null,
+    /** Feed alias from the `<ConnectionEntry alias="…">`, if any. */
+    val videoAlias: String? = null,
 ) {
     val affiliation: CoTAffiliation
         get() {

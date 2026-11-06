@@ -892,6 +892,10 @@ class UASManager(
                             groundSpeedMps = st.groundSpeedMps,
                             operatorUid = operatorUid,
                             vehicleClass = st.vehicleClass,
+                            // Advertise the drone's RTSP feed on its marker so
+                            // teammates get a "Watch" action (credentials are
+                            // stripped by the builder).
+                            videoUri = (videoSource.value as? VideoSource.Rtsp)?.url,
                         )
                     )
                 }.onFailure { Log.w(TAG, "CoT pump send failed: ${it.message}") }
