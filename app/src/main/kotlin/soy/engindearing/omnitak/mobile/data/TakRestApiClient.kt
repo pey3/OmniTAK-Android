@@ -11,6 +11,8 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
 import soy.engindearing.omnitak.mobile.data.net.TakTls
+import soy.engindearing.omnitak.mobile.data.video.MartiVideoParser
+import soy.engindearing.omnitak.mobile.data.video.VideoFeed
 import java.net.HttpURLConnection
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
@@ -74,6 +76,27 @@ class TakRestApiClient(
         val (code, body) = httpGet("/Marti/api/sync/search")
         if (code !in 200..299) throw ApiException(httpReason(code, body))
         return parseDataPackages(body)
+    }
+
+    /**
+     * Video feeds the server advertises. Tries the JSON video API
+     * (`GET /Marti/api/video`, TAK Server 4.x+ and OpenTAKServer) and falls
+     * back to the legacy Video Connection Manager XML (`GET /Marti/vcm`)
+     * when that is missing or empty. Returned URLs may carry an access
+     * token (OpenTAKServer adds `jwt=`): never log them unredacted.
+     */
+    fun getVideoFeeds(): List<VideoFeed> {
+        val (code, body) = httpGet("/Marti/api/video")
+        if (code in 200..299) {
+            val feeds = MartiVideoParser.parseJson(body, server.id)
+            if (feeds.isNotEmpty()) return feeds
+        } else if (code != 404) {
+            throw ApiException(httpReason(code, ""))
+        }
+        val (vcmCode, vcmBody) = httpGet("/Marti/vcm")
+        if (vcmCode == 404) return emptyList()
+        if (vcmCode !in 200..299) throw ApiException(httpReason(vcmCode, ""))
+        return MartiVideoParser.parseXml(vcmBody, server.id)
     }
 
     /**

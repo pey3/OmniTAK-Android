@@ -14,6 +14,7 @@ import javax.net.ssl.KeyManager
 import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSession
+import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
@@ -139,6 +140,30 @@ object TakTls {
             // System trust: leave the platform default verifier in place.
             else -> Unit
         }
+    }
+
+    /** TLS pieces for an OkHttp client; see [forOkHttp]. */
+    class OkHttpTls internal constructor(
+        val socketFactory: SSLSocketFactory,
+        val trustManager: X509TrustManager,
+        /** Non-null when the platform hostname check must be bypassed (pinned / untrusted). */
+        val hostnameVerifier: HostnameVerifier?,
+    )
+
+    /**
+     * The same per-server policy as [configure], packaged for OkHttp —
+     * used by the video player to fetch HLS from the TAK server's own
+     * nginx (OpenTAKServer serves `/hls/` with the server certificate
+     * signed by its internal CA).
+     */
+    fun forOkHttp(server: TAKServer, certVault: CertVault?): OkHttpTls {
+        val keyManagers = clientKeyManagers(server.certificateName, server.certificatePassword, certVault)
+        val trust = serverTrust(server, certVault)
+        return OkHttpTls(
+            socketFactory = sslContext(keyManagers, trust.trustManager).socketFactory,
+            trustManager = trust.trustManager,
+            hostnameVerifier = if (trust.verifiesHostname) null else AcceptAllHostnames,
+        )
     }
 
     /**
