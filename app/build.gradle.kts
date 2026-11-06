@@ -70,6 +70,13 @@ android {
     }
 
     buildTypes {
+        getByName("debug") {
+            // Installs next to the Play Store build (different package),
+            // so a field tester keeps a known-good app on the same phone.
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            resValue("string", "app_name", "OmniTAK Dev")
+        }
         getByName("release") {
             isMinifyEnabled = true
             isShrinkResources = true
