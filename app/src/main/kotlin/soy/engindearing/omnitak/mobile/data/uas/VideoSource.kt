@@ -1,5 +1,10 @@
 package soy.engindearing.omnitak.mobile.data.uas
 
+import soy.engindearing.omnitak.mobile.data.video.VideoFeed
+import soy.engindearing.omnitak.mobile.data.video.VideoFeedOrigin
+import soy.engindearing.omnitak.mobile.data.video.VideoFeedUrls
+import soy.engindearing.omnitak.mobile.data.video.VideoProtocol
+
 /**
  * Where the live drone camera stream is coming from.
  *
@@ -36,4 +41,28 @@ sealed class VideoSource {
         fun mpegTsUdp(port: Int): VideoSource =
             if (port in 1..65535) MpegTsUdp(port) else None
     }
+}
+
+/**
+ * The drone camera as a [VideoFeed], so the UAS PiP plays through the same
+ * shared player (and health badge) as every other feed. Credentials typed
+ * into the RTSP URL are split out like for manual feeds. Null for [VideoSource.None].
+ */
+fun VideoSource.toVideoFeed(alias: String = "UAS video"): VideoFeed? = when (this) {
+    is VideoSource.None -> null
+    is VideoSource.Rtsp -> {
+        val (clean, user, pass) = VideoFeedUrls.splitCredentials(url)
+        VideoFeed(
+            id = "uas:rtsp", alias = alias, url = clean, protocol = VideoProtocol.RTSP,
+            username = user, password = pass, origin = VideoFeedOrigin.UAS,
+        )
+    }
+    is VideoSource.RawH264Udp -> VideoFeed(
+        id = "uas:raw:$port", alias = alias, url = "udp://@:$port",
+        protocol = VideoProtocol.UDP_RAW_H264, origin = VideoFeedOrigin.UAS,
+    )
+    is VideoSource.MpegTsUdp -> VideoFeed(
+        id = "uas:ts:$port", alias = alias, url = "udp://@:$port",
+        protocol = VideoProtocol.UDP_MPEGTS, origin = VideoFeedOrigin.UAS,
+    )
 }

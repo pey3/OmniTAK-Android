@@ -44,6 +44,8 @@ class RawH264UdpPlayer(
     private var pps: ByteArray? = null
     private var codecConfigured = false
     @Volatile private var firstFrameRendered = false
+    /** Guards codec creation (reader thread) against stop() (caller thread). */
+    private val codecLock = Any()
 
     fun start() {
         if (running) return
@@ -74,10 +76,12 @@ class RawH264UdpPlayer(
         if (!running) return
         running = false
         try { socket?.close() } catch (_: Throwable) {}
-        try { codec?.signalEndOfInputStream() } catch (_: Throwable) {}
-        try { codec?.stop() } catch (_: Throwable) {}
-        try { codec?.release() } catch (_: Throwable) {}
-        codec = null
+        synchronized(codecLock) {
+            try { codec?.signalEndOfInputStream() } catch (_: Throwable) {}
+            try { codec?.stop() } catch (_: Throwable) {}
+            try { codec?.release() } catch (_: Throwable) {}
+            codec = null
+        }
         readerThread?.interrupt()
         renderThread?.interrupt()
         readerThread = null
@@ -158,11 +162,16 @@ class RawH264UdpPlayer(
                     setInteger(MediaFormat.KEY_LOW_LATENCY, 1)
                 }
             }
-            val c = MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_AVC)
-            c.configure(format, surface, null, 0)
-            c.start()
-            codec = c
-            codecConfigured = true
+            // A stop() racing this reader thread must not leave a codec
+            // bound to the Surface (the next configure on it would fail).
+            synchronized(codecLock) {
+                if (!running) return
+                val c = MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_AVC)
+                c.configure(format, surface, null, 0)
+                c.start()
+                codec = c
+                codecConfigured = true
+            }
             renderThread = thread(name = "h264-udp-render-$port", isDaemon = true) { renderLoop() }
             Log.i(TAG, "decoder configured ${dims.width}x${dims.height}")
         } catch (t: Throwable) {

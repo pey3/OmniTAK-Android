@@ -248,6 +248,11 @@ dependencies {
     implementation("androidx.media3:media3-exoplayer:1.4.1")
     implementation("androidx.media3:media3-exoplayer-rtsp:1.4.1")
     implementation("androidx.media3:media3-ui:1.4.1")
+    // Video Feeds (GAP-082): HLS for TAK-server / MediaMTX feeds, played
+    // through OkHttp so HTTPS can reuse the TAK server's CA pin (TakTls).
+    // Both Apache-2.0, same Media3 release as above.
+    implementation("androidx.media3:media3-exoplayer-hls:1.4.1")
+    implementation("androidx.media3:media3-datasource-okhttp:1.4.1")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
