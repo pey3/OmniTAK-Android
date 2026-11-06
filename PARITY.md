@@ -70,7 +70,7 @@ Features iOS has that Android doesn't yet. Triage which need parity vs which can
 
 - [ ] **GAP-080** Data Package import (.zip): iOS has, Android missing (GAP-105 landed mTLS certs; the `.zip` package path is still deferred)
 - [x] **GAP-081** CSR enrollment (port 8446): Quick Connect ships in 0.9.0 (vc52)
-- [~] **GAP-082** Video feeds: ONVIF/RTSP camera viewer (`OnvifCameraScreen.kt`) + UAS video landed; generic HLS / SRT feed manager still missing
+- [~] **GAP-082** Video feeds: generic feed manager landed (Tools → Video Feeds, `ui/screens/VideoFeedsScreen.kt`, `domain/VideoFeedManager.kt`): RTSP / HLS / UDP MPEG-TS / UDP raw H.264, encrypted per-feed credentials, full-screen player + draggable map PiP without MAVLink (UAS PiP now on the same player), CONNECTING / LIVE / RECONNECTING / STALE / ERROR badge with auto-reconnect, snapshot, Android PiP, TAK-server feeds from `/Marti/api/video` (VCM XML fallback), `__video` on received markers ("Watch video") and "share to team" video markers. Still missing: SRT (no Media3 source), direct RTMP playback (use the server's RTSP re-serve), recording
 - [ ] **GAP-083** Photo attachments with EXIF: iOS has, Android missing
 - [ ] **GAP-084** Plugin system: iOS has, Android has UI scaffolding only (`PluginDetailScreen.kt`)
 - [x] **GAP-085** ADS-B traffic display: `AdsbService.kt` wired into the map and the Layers aircraft toggle
